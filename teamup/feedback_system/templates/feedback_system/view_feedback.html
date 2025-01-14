@@ -1,0 +1,47 @@
+{% extends "blog/base.html" %}
+{% load join_request_tags %}
+{% block content %}
+
+<article class="media content-section">
+    <img class="rounded-circle article-img" src="{{ receiver_profile.user.profile.image.url }}">
+    <div class="media-body">
+        <div class="article-metadata">
+            <h4>{{ receiver_profile.user }}</h4>
+        </div>
+        <h1>Feedback for {{ receiver_profile.user.username }}</h1>
+
+        {% for feedback in participants_feedback %}
+            <div class="feedback-box">
+                <p><strong>Giver:</strong> {{ feedback.giver.user.username }}</p>
+                <p><strong>Rating:</strong> {{ feedback.rating }} / 5</p>
+                <p><strong>Comment:</strong> {{ feedback.comment }}</p>
+                <hr>
+            </div>
+        {% endfor %}
+    </div>
+</article>
+
+<style>
+    .feedback-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .feedback-box {
+        background-color: #f9f9f9;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+        color: #333;
+    }
+
+    p {
+        margin: 8px 0;
+    }
+</style>
+
+{% endblock content %}

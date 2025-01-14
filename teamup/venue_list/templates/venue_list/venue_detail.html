@@ -1,0 +1,56 @@
+<!-- venue_detail.html -->
+{% extends "blog/base.html" %}
+{% block content %}
+    <br>
+    <article class="media content-section">
+        <div class="media-body">
+            <div class="article-metadata">
+                <h1>{{ venue.name }}</h1>
+
+                <h2><a class="article-title" >Sport type: </a></h2>
+                <ul>
+                    {% for sport_type in venue.sport_types.all %}
+                        <li>{{ sport_type.name }}</li>
+                    {% endfor %}
+                </ul>
+
+                <p class="article-content">Location: {{ venue.location }}</p>
+                <p class="article-content">Contact Number: {{ venue.contact_number }}</p>
+
+                <!-- Google Maps Section -->
+                <div id="map" style="height: 400px; width: 100%;"></div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Add the following script to initialize Google Maps -->
+ <script>
+    function initMap() {
+        var venueLocation = { lat: {{ venue.latitude }}, lng: {{ venue.longitude }} };
+
+        try {
+            var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 15,
+                center: venueLocation
+            });
+
+            var marker = new google.maps.Marker({
+                position: venueLocation,
+                map: map,
+                title: '{{ venue.name }}'
+            });
+        } catch (error) {
+            console.error('Error initializing map:', error);
+        }
+    }
+
+    // Ensure the Google Maps API is loaded before calling initMap
+    if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
+        initMap();
+    } else {
+        // Handle the case when the API is not loaded yet
+        console.error('Google Maps API not loaded.');
+    }
+</script>
+
+{% endblock content %}

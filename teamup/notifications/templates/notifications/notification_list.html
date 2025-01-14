@@ -1,0 +1,84 @@
+{% extends "blog/base.html" %}
+
+{% block content %}
+  <div class="container">
+    <h2>Notifications</h2>
+      <a href="{% url 'mark-all-as-read' %}">Mark all as read</a>
+    <ul class="list-group">
+      {% for notification in notifications %}
+        <li class="list-group-item">
+          <div class="notification">
+            <div class="notification-header">
+              <h3 class="notification-title">New notification</h3>
+              <a href="{% url 'mark-as-read' notification.id %}">Mark as read</a>
+              <i class="fa fa-times notification-close"></i>
+            </div>
+            <div class="notification-container">
+              <div class="notification-media">
+                <img src="{{ notification.user_avatar }}" alt="" class="notification-user-avatar">
+                <i class="fa fa-thumbs-up notification-reaction"></i>
+              </div>
+              <div class="notification-content">
+
+                <span class="notification-timer">{{ notification.created_at }}</span>
+              </div>
+              <span class="notification-status"></span>
+            </div>
+          </div>
+
+           {% if 'removed' in notification.message %}
+          {{ notification.message }}
+          <a href="{% url 'blog-home'%}">View Event</a>
+        {% elif 'joined the event' in notification.message %}
+          {{ notification.message }}
+          <a href="{% url 'joined-events' %}">View Event</a>
+        {% elif 'accepted your friend request' in notification.message %}
+          {{ notification.message }}
+          <a href="{% url 'friend'%}">View Profile</a>
+        {% elif 'sent you a friend request' in notification.message %}
+          {{ notification.message }}
+          <a href="{% url 'friend-request' user.username %}">View Friend Request</a>
+        {% elif 'announcement' in notification.message %}
+          {{ notification.message }}
+          <a href="{% url 'announcement' %}">View Announcement</a>
+         {% elif 'successful' in notification.message %}
+          {{ notification.message }}
+          <a href="{% url 'user-posts' username=user.username %}">View Created Event</a>
+          {% elif 'cancel' in notification.message %}
+          {{ notification.message }}
+          <a href="{% url 'blog-home' %}">Find Other Event</a>
+          {% elif 'joined your event' in notification.message %}
+          {{ notification.message }}
+          <a href="{% url 'user-posts' username=user.username %}">View Created event</a>
+          {% elif 'has canceled their participation' in notification.message %}
+          {{ notification.message }}
+          <a href="{% url 'user-posts' username=user.username %}">View Created event</a>
+
+
+
+         {% else %}
+          {{ notification.message }}
+        {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+<style>
+  .unread {
+  background-color: #f8d7da;
+}
+
+.red-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  border-radius: 50%;
+  margin-left: 5px;
+}
+
+</style>
+
+
+{% endblock content %}

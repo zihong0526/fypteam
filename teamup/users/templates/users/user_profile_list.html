@@ -1,0 +1,94 @@
+{% extends "blog/base.html" %}
+{% block content %}
+<h1>Find Partner</h1>
+        <form method="get" action="{% url 'user-profile-list' %}">
+        <label for="sport"></label>
+        <select name="sport" >
+            <option value="" {% if not request.GET.sport_type %}selected{% endif %}>Preferred Sport</option>
+            {% for sport in sports_list %}
+                <option value="{{ sport.name }}" {% if sport.name in sport_filter %}selected{% endif %}>{{ sport.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="skill_level"></label>
+        <select name="skill_level">
+            <option value="" {% if not request.GET.skill_level %}selected{% endif %}>Skill Level</option>
+            <option value="Beginner" {% if "Beginner" == skill_level_filter %}selected{% endif %}>Beginner</option>
+            <option value="Medium" {% if "Medium" == skill_level_filter %}selected{% endif %}>Medium</option>
+            <option value="Pro" {% if "Pro" == skill_level_filter %}selected{% endif %}>Pro</option>
+        </select>
+
+        <label for="gender"></label>
+        <select name="gender">
+            <option value="">Gender</option>
+            <option value="MALE" {% if "MALE" == gender_filter %}selected{% endif %}>MALE</option>
+            <option value="FEMALE" {% if "FEMALE" == gender_filter %}selected{% endif %}>FEMALE</option>
+            <option value="SECRET" {% if "SECRET" == gender_filter %}selected{% endif %}>SECRET</option>
+        </select>
+
+        <label for="location"></label>
+        <input type="text" name="location" placeholder="Location" value="{{ location_filter|default:'' }}">
+
+
+
+        <button type="submit">Search</button>
+    </form>
+  {% for profiles in profiles %}
+
+
+      <article class="media content-section">
+              <img class="rounded-circle article-img" src="{{ profiles.image.url }}">
+              <div class="media-body">
+                <a class="mr-2" href="{% url 'view-feedback' profiles.user.profile.id %}">{{ profiles.user }}</a>
+
+                  <h3>{{ profiles.sport_1 }}: {{ profiles.skill_level_1}}</h3>
+
+                  <h3>{{ profiles.sport_2 }}: {{ profiles.skill_level_2}}</h3>
+
+                  <h3>{{ profiles.sport_3 }}: {{ profiles.skill_level_3}}</h3>
+
+              <p class="article-content">Location: {{ profiles.location }} </p>
+                <p class="article-content">Gender: {{ profiles.gender }} </p>
+                <p class="article-content">Age: {{ profiles.age }} </p>
+                  <p class="article-content">Rating: {{ profiles.average_rating }} </p>
+
+                  <div class="media-body">
+                        <form method="post" action="{% url 'user-profile-list' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="friend_username" value="{{ profiles.user.username }}">
+                            <button type="submit" class="btn btn-primary add-friend-btn" {% if profiles.is_friend %}disabled{% endif %}>
+                                {% if profiles.is_friend %}Added{% else %}Add{% endif %}
+                            </button>
+                        </form>
+                    </div>
+ </div>
+          </article>
+
+{% endfor %}
+
+    {% if is_paginated %}
+
+        {% if page_obj.has_previous %}
+            <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
+            <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">Next</a>
+            <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+        {% endif %}
+
+    {% endif %}
+
+
+
+
+{% endblock content %}

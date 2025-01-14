@@ -1,0 +1,48 @@
+{% extends "blog/base.html" %}
+{% block content %}
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Friends</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if friends %}
+                            {% with friends=user.friendss_set.all %}
+                            <div class="list-group">
+                                {% for friend in friends %}
+                                    {% for friend_user in friend.friend.all %}
+                                        <a href="{% url 'mark-messages-as-read' recipient_username=friend_user.username %}" class="list-group-item list-group-item-action">
+                                            {{ friend_user.username }}
+                                        </a>
+                                    {% endfor %}
+                                {% endfor %}
+                            </div>
+                        {% endwith %}
+                        {% else %}
+                            <p>No friends available.</p>
+                        {% endif %}
+                        <br>
+                        <a href="{% url 'create-group' %}" class="list-group-item list-group-item-action">Create Group</a>
+                        <a href="{% url 'show-group-chats' %}" class="list-group-item list-group-item-action">Group Chats</a>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Message</h2>
+                    </div>
+                    <div class="card-body">
+                      <h6>Let's chat with your friend</h6>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock content %}

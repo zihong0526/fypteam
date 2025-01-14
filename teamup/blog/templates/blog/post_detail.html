@@ -1,0 +1,139 @@
+{% extends "blog/base.html" %}
+{% load join_request_tags %}
+{% block content %}
+
+        <article class="media content-section">
+            <img class="rounded-circle article-img" src="{{ object.author.profile.image.url }}">
+            <div class="media-body">
+            <div class="article-metadata">
+              <h4>{{ object.author }}</h4>
+              <small class="text-muted">post on {{ object.date_posted }}</small>
+                {% if object.author == user %}
+                   <div>
+                    <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'post-update' object.id %}">Update</a>
+                    <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'post-delete' object.id %}">Delete</a>
+                   </div>
+                {% endif %}
+            </div>
+            <h2>Sport type: {{ object.sport_type }}</h2>
+            <p class="article-content">Location: {{ object.location }}
+              <p class="article-content">Require {{ object.participant_number }} people</p>
+              <p class="article-content">Event Date: {{ post.event_date }} </p>
+            <p class="article-content">Status: {{ post.status }} </p>
+            <p class="article-content">Time: {{ post.event_time }} - {{ post.event_end_time }} </p>
+
+
+
+               {% if post.author != user %}
+            {% with join_status=user|user_join_status:post %}
+                {% if join_status == 'joined' %}
+                    <button class="btn btn-secondary joinButton" data-post-id="{{ post.id }}">Cancel Join</button>
+                    <p>You have joined this event.</p>
+                {% elif join_status == 'rejected' %}
+                    <p>Your join request was rejected.</p>
+                    {% else %}
+                        {% if post.joined_users_count == post.participant_number %}
+                            <button class="btn btn-secondary joinButton" data-post-id="{{ post.id }}" disabled>Full</button>
+                        {% elif post.status == 'inactive' %}
+                            <!-- Check if the event is inactive -->
+                            <button class="btn btn-secondary joinButton" data-post-id="{{ post.id }}" disabled>Event not available</button>
+                        {% elif post.event_date == today and post.event_end_datetime < current_time %}
+                            <!-- Check if the event has ended -->
+                            <button class="btn btn-secondary joinButton" data-post-id="{{ post.id }}" disabled>Event Ended</button>
+                        {% else %}
+                            <button class="btn btn-primary joinButton" data-post-id="{{ post.id }}">Join Event</button>
+                    {% endif %}
+                {% endif %}
+            {% endwith %}
+          {% endif %}
+
+
+        <p id="participantsCount{{ post.id }}">Participants: {{ post.joined_users_count }} / {{ post.participant_number }}</p>
+
+
+                <ul>
+                    {% for participant in object.participants.all %}
+                        <li>
+                            {{ participant.username }}
+                            {% if object.author == user %}
+                                {% if object.joined_users_count > 0 %}
+                                    <div>
+                                        <button class="btn btn-danger btn-sm" onclick="removeParticipant({{ object.id }}, {{ participant.id }})">Remove</button>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+<br><br><br>
+                 <!-- Google Maps Section -->
+            <div id="map" style="height: 400px; width: 100%;"></div>
+
+
+      </div>
+    </article>
+
+
+<script>
+function removeParticipant(postId, participantId) {
+        // Perform AJAX request
+        fetch(`/remove_participant/${postId}/${participantId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Reload the page or update the participant list dynamically
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+  document.querySelectorAll('.joinButton').forEach(button => {
+    button.addEventListener('click', function() {
+      const postId = this.getAttribute('data-post-id');
+      const isJoining = this.innerHTML === 'Join Event';
+
+      // Perform AJAX request
+      fetch(`/join_event/${postId}/`)
+        .then(response => response.json())
+        .then(data => {
+          const participantsCountElement = document.getElementById(`participantsCount${postId}`);
+
+          if (isJoining) {
+            this.innerHTML = 'Cancel Join';
+            this.setAttribute('disabled', 'true');
+            participantsCountElement.innerHTML = `Participants: ${data.participant_count} / ${post.participant_number}`;
+            alert('Join request sent!');
+          } else {
+            this.innerHTML = 'Join Event';
+            this.removeAttribute('disabled');
+            participantsCountElement.innerHTML = `Participants: ${data.participant_count} / ${post.participant_number}`;
+            alert('Join request canceled!');
+          }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+  });
+</script>
+
+<!-- Add the following script to initialize Google Maps -->
+<script>
+    function initMap() {
+        var postLocation = { lat: {{ post.venue_latitude }}, lng: {{ post.venue_longitude }} };
+        var map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 15,
+            center: postLocation
+        });
+
+        var marker = new google.maps.Marker({
+            position: postLocation,
+            map: map,
+            title: '{{ object.sport_type }}'
+        });
+    }
+    google.maps.event.addDomListener(window, 'load', initMap);
+</script>
+
+{% endblock content %}

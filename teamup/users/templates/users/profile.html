@@ -1,0 +1,80 @@
+{% extends "blog/base.html" %}
+{% load bootstrap4 %}
+{% block content %}
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD76S7BkyqKPv97f_VZD-1G9RYz9a6LzrY&libraries=places"></script>
+
+   <div class="content-section">
+     <div class="media">
+       <img class="rounded-circle account-img" src="{{ user.profile.image.url }}">
+       <div class="media-body">
+         <h2 class="account-heading">{{ user.username }}</h2>
+         <p class="text-secondary">{{ user.email }}</p>
+
+       </div>
+     </div>
+     <div class=>
+             {% if user.is_authenticated %}
+                <a  href="{% url 'change-password' %}">Change Password</a>
+            {% endif %}
+        </div>
+     <form method="POST" enctype="multipart/form-data">
+       {% csrf_token %}
+       <fieldset class="form-group">
+         <legend class="border-bottom mb-4">Profile Info</legend>
+           {% bootstrap_form u_form %}
+           {% bootstrap_form p_form %}
+       </fieldset>
+<!-- Add the location input and map container -->
+       <div class="form-group">
+           <label for="location">Select Location At Here</label>
+           <input type="text" class="form-control" id="locationInput" name="location" placeholder="Type location...">
+           <div id="map" style="height: 300px; margin-top: 10px;"></div>
+           <input type="hidden" id="latitude" name="latitude">
+           <input type="hidden" id="longitude" name="longitude">
+       </div>
+
+       <div class="form-group">
+         <button class="btn btn-outline-info" type="submit">
+           Update
+         </button>
+
+       </div>
+     </form>
+
+   </div>
+
+<!-- Add the JavaScript code for Google Maps -->
+   <script>
+       function initMap() {
+           var map = new google.maps.Map(document.getElementById('map'), {
+               center: {lat: 0, lng: 0},
+               zoom: 1
+           });
+
+           var input = document.getElementById('locationInput');
+           var autocomplete = new google.maps.places.Autocomplete(input);
+
+           autocomplete.addListener('place_changed', function() {
+               var place = autocomplete.getPlace();
+               if (!place.geometry) {
+                   return;
+               }
+
+               var latitudeInput = document.getElementById('latitude');
+               var longitudeInput = document.getElementById('longitude');
+
+               latitudeInput.value = place.geometry.location.lat();
+               longitudeInput.value = place.geometry.location.lng();
+
+               map.setCenter(place.geometry.location);
+               map.setZoom(15);
+           });
+       }
+   </script>
+
+   <!-- Call the initMap function when the page is loaded -->
+   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD76S7BkyqKPv97f_VZD-1G9RYz9a6LzrY&libraries=places&callback=initMap"></script>
+
+
+{% endblock content %}

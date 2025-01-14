@@ -1,0 +1,52 @@
+{% extends "blog/base.html" %}
+{% block content %}
+    <div class="container-fluid mt-5">
+        <div class="row">
+            <div class="col-md-4">
+                <!-- Friends list card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Friends</h2>
+                    </div>
+                    <div class="card-body">
+                        {% with friends=user.friendss_set.all %}
+                            <div class="list-group">
+                                {% for friend in friends %}
+                                    {% for friend_user in friend.friend.all %}
+                                        <a href="{% url 'mark-messages-as-read' recipient_username=friend_user.username %}" class="list-group-item list-group-item-action">
+                                            {{ friend_user.username }}
+                                        </a>
+                                    {% endfor %}
+                                {% endfor %}
+                            </div>
+                        <br>
+                        <a href="{% url 'create-group' %}" class="list-group-item list-group-item-action">Create Group</a>
+                        <a href="{% url 'show-group-chats' %}" class="list-group-item list-group-item-action active">Group Chats</a>
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <!-- Group Chats card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Group Chats</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if group_chats %}
+                            <ul class="list-group">
+                                {% for group_chat in group_chats %}
+                                    <a href="{% url 'group-chat' group_id=group_chat.id %}" class="list-group-item list-group-item-action">
+                                        {{ group_chat.name }}
+                                    </a>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>No group chats available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

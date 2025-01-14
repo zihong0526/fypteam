@@ -1,0 +1,173 @@
+{% extends "blog/base.html" %}
+{% load join_request_tags %}
+{% block content %}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+    $.noConflict();
+    jQuery(function($) {
+        $("#datepicker").datepicker({
+            dateFormat: 'yy-mm-dd',
+            changeMonth: true,
+            changeYear: true,
+
+        });
+    });
+</script>
+<style>
+    #ui-datepicker-div {
+        background-color: white;
+    }
+</style>
+  <h1 class="mb-3">Event: {{ view.kwargs.username }} ({{ page_obj.paginator.count }}) </h1>
+<form method="GET" action="{% url 'blog-home' %}">
+    <div class="form-group">
+        <select name="sport_type">
+            <option value="" {% if not request.GET.sport_type %}selected{% endif %}>Preferred Sport</option>
+            {% for sport in sports %}
+                <option value="{{ sport.name }}" {% if request.GET.sport_type == sport.name %}selected{% endif %}>{{ sport.name }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="location">
+            <option value="" {% if not request.GET.location %}selected{% endif %}>Select Location</option>
+            {% for venue in venues %}
+                <option value="{{ venue.name }}" {% if request.GET.location == venue.name %}selected{% endif %}>{{ venue.name }}</option>
+            {% endfor %}
+        </select>
+
+        <input type="text" name="event_date" id="datepicker" placeholder="Event Date" value="{{ request.GET.event_date }}">
+        <button type="submit">Search</button>
+    </div>
+</form>
+
+  {% for post in posts %}
+    <article class="media content-section">
+      <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}">
+      <div class="media-body">
+        <div class="article-metadata">
+          <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a>
+          <small class="text-muted">post on {{ post.date_posted }}</small>
+        </div>
+        <h2><a class="article-title" href="{% url 'post-detail' post.id %}">Sport type: {{ post.sport_type }}</a></h2>
+        <p class="article-content">Location: {{ post.location }}
+        <p class="article-content">Require {{ post.participant_number }} people</p>
+        <p class="article-content">Event Date: {{ post.event_date }} </p>
+        <p class="article-content">Status: {{ post.status }} </p>
+        <p class="article-content">Time: {{ post.event_time }} - {{ post.event_end_time }} </p>
+
+        <p class="text-muted">Please note that you cannot participate in different events at the same time.</p>
+
+
+    {% if post.status == 'inactive' %}
+          <p class="text-muted">Event is inactive and has ended.</p>{% endif %}
+        {% if post.author != user %}
+            {% with join_status=user|user_join_status:post %}
+                {% if join_status == 'joined' %}
+                    <button class="btn btn-secondary joinButton" data-post-id="{{ post.id }}">Cancel Join</button>
+                    <p>You have joined this event.</p>
+                {% elif join_status == 'rejected' %}
+                    <p>Your join request was rejected.</p>
+                    {% else %}
+                        {% if post.joined_users_count == post.participant_number %}
+                            <button class="btn btn-secondary joinButton" data-post-id="{{ post.id }}" disabled>Full</button>
+                        {% elif post.status == 'cancel' %}
+                            <button class="btn btn-secondary joinButton" data-post-id="{{ post.id }}" disabled>Event Cancel</button>
+                        {% elif post.status == 'inactive' %}
+                            <!-- Check if the event is inactive -->
+                            <button class="btn btn-secondary joinButton" data-post-id="{{ post.id }}" disabled>Event not available</button>
+                            {% if post.event_date == today and post.event_end_datetime < current_time %}
+                            <!-- Check if the event has ended -->
+                            <button class="btn btn-secondary joinButton" data-post-id="{{ post.id }}" disabled>Event Ended</button>{% endif %}
+                        {% else %}
+                            <button class="btn btn-primary joinButton" data-post-id="{{ post.id }}">Join Event</button>
+                    {% endif %}
+                {% endif %}
+            {% endwith %}
+          {% endif %}
+
+
+        <p id="participantsCount{{ post.id }}">Participants: {{ post.joined_users_count }} / {{ post.participant_number }}</p>
+
+
+      </div>
+    </article>
+  {% endfor %}
+
+  {% if is_paginated %}
+    {% if page_obj.has_previous %}
+      <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
+      <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+        <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
+      {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+      <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">Next</a>
+      <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+    {% endif %}
+  {% endif %}
+
+<script>
+  document.querySelectorAll('.joinButton').forEach(button => {
+    button.addEventListener('click', function () {
+        const postId = this.getAttribute('data-post-id');
+        const isJoining = this.innerHTML.trim() === 'Join Event';
+
+
+        // Perform AJAX request
+        const url = isJoining ? `/join_event/${postId}/` : `/cancel_join_event/${postId}/`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const participantsCountElement = document.getElementById(`participantsCount${postId}`);
+
+                if (isJoining) {
+                    window.location.href = `/join-success/${postId}/?message=You success join the event!`;
+
+                    this.innerHTML = 'Cancel Join';
+                    this.classList.add('btn-secondary');
+                    this.classList.remove('btn-primary');
+                    participantsCountElement.innerHTML = `Participants: ${data.participant_count} / ${post.participant_number}`;
+                    alert('Join request sent!');
+
+                    // Check if participant count equals required participant number
+                    if (data.participant_count === data.participant_number) {
+                        this.classList.add('btn-full');  // Add a class for styling a "full" button
+                        this.setAttribute('disabled', true);
+                    }
+                } else {
+                    window.location.href = `/cancel-join-success/${postId}/?message=You are not joining event now!`;
+
+                    this.innerHTML = 'Join Event';
+                    this.classList.add('btn-primary');
+                    this.classList.remove('btn-secondary');
+                    participantsCountElement.innerHTML = `Participants: ${data.participant_count} / ${post.participant_number}`;
+                    alert('Join request canceled!');
+
+                    // Check if participant count equals required participant number
+                    if (data.participant_count === post.participant_number) {
+                        this.classList.remove('btn-full');
+                        this.removeAttribute('disabled');
+
+                    }
+                }
+
+            })
+
+            .catch(error => console.error('Error:', error));
+    });
+});
+
+</script>
+
+
+
+{% endblock content %}

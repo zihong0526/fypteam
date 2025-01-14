@@ -1,0 +1,69 @@
+{% extends "blog/base.html" %}
+{% block content %}
+    <div class="container-fluid mt-5">
+        <div class="row">
+            <div class="col-md-4">
+                <!-- Friends list card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Friends</h2>
+                    </div>
+                    <div class="card-body">
+                        {% with friends=user.friendss_set.all %}
+                            <div class="list-group">
+                                {% for friend in friends %}
+                                    {% for friend_user in friend.friend.all %}
+                                        <a href="{% url 'mark-messages-as-read' recipient_username=friend_user.username %}" class="list-group-item list-group-item-action">
+                                            {{ friend_user.username }}
+                                        </a>
+                                    {% endfor %}
+                                {% endfor %}
+                            </div>
+                        <br>
+                        <a href="{% url 'create-group' %}" class="list-group-item list-group-item-action">Create Group</a>
+                        <a href="{% url 'show-group-chats' %}" class="list-group-item list-group-item-action active">Group Chats</a>
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <!-- Group Chat card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>{{ group_chat.name }}</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if group_messages %}
+                            <ul class="list-unstyled">
+                                {% for message in group_messages %}
+                                    <li class="mb-3 {% if message.sender == user %}text-right{% else %}text-left{% endif %}">
+                                        <div class="message-box p-3 border {% if message.sender == user %}bg-light{% endif %}">
+                                            <div class="message-header">
+                                                <strong class="message-username">{{ message.sender.username }}</strong>
+                                            </div>
+                                            <div class="message-content">{{ message.content }}</div>
+                                            <small class="text-muted">{{ message.timestamp|date:"F j, Y, g:i a" }}</small>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>No messages available in this group chat.</p>
+                        {% endif %}
+
+                        <hr>
+                        <!-- Message form -->
+                        <form method="post" action="{% url 'group-chat' group_id=group_chat.id %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="content">Your Message:</label>
+                                <textarea class="form-control" name="content" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Send</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

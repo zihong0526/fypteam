@@ -1,0 +1,82 @@
+{% extends "blog/base.html" %}
+{% block content %}
+    <h1>Announcement</h1>
+        {% if user in announcement_permissions_list.0.users_with_permissions.all %}
+            <a class="btn btn-primary mb-2" href="{% url 'create_announcement' %}">Create Announcement</a>
+        {% endif %}
+    {% for announcement in announcements %}
+
+        <article class="media content-section">
+                <div class="media-body">
+                    <div class="article-metadata">
+                        <img class="rounded-circle article-img" src="{{ announcement.author.profile.image.url }}">
+                        <div class="media-body">
+                            <a class="mr-2" >{{ announcement.author }}</a>
+                            <small class="text-muted">Posted on {{ announcement.date }} at {{ announcement.time }}</small>
+
+                        </div>
+                    <h2><a href="{% url 'edit_announcement' announcement.id %}">{{ announcement.title }}</a></h2>
+                    <p class="article-content">{{ announcement.content }}</p>
+                </div>
+
+                    <form method="post" action="{% url 'like_announcement' announcement.id %}">
+                    {% csrf_token %}
+                        <small class="text-muted">Likes: {{ announcement.total_likes }}</small>
+
+                    <button type="submit" class="btn btn-link">
+                        {% if user in announcement.likes.all %}
+                            Unlike
+                        {% else %}
+                            Like
+                        {% endif %}
+                    </button>
+                </form>
+
+                    <div>
+
+                    <form method="post" action="{% url 'add_comment_to_announcement' announcement.id %}">
+                        {% csrf_token %}
+                        <textarea name="comment_text"></textarea>
+                        <button type="submit" class="btn btn-info">Comment</button>
+                    </form>
+                </div>
+
+                    <div>
+                        {% for comment in announcement.comment_set.all %}
+                            <p>{{ comment.author }}: {{ comment.text }}</p>
+                            {% if user == comment.author %}
+                                <a href="{% url 'delete_comment' comment.id %}">Delete</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+{% if user == announcement.author %}
+    <div>
+
+        <form method="post" action="{% url 'delete_announcement' announcement.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+    </div>
+
+{% endif %}
+            </article>
+    {% endfor %}
+    {# Pagination controls #}
+    {% if is_paginated %}
+        {% if page_obj.has_previous %}
+            <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
+            <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">Next</a>
+            <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+        {% endif %}
+    {% endif %}
+{% endblock content %}

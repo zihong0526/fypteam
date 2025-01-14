@@ -1,0 +1,34 @@
+{% extends "blog/base.html" %}
+{% block content %}
+    <div class="container">
+        <h1>Friend Request for {{ user.username }}</h1>
+        <a class="btn btn-info" href="{% url 'sent-request' %}">Sent Request</a>
+        <a class="btn btn-info" href="{% url 'friend' %}">Friend</a>
+
+        {% for follower in followers %}
+            <article class="media content-section">
+                <img class="rounded-circle article-img" src="{{ follower.user.profile.image.url }}">
+                <div class="media-body">
+                    <a class="mr-2" href="#">{{ follower.user.username }}</a>
+                    <h2>Prefer sport:</h2>
+                    <h2>{{ follower.user.profile.sport_1 }}</h2>
+                    <h4>Skill level: {{ follower.user.profile.skill_level_1 }}</h4>
+                    <h2>{{ follower.user.profile.sport_2 }}</h2>
+                    <h4>Skill level: {{ follower.user.profile.skill_level_2 }}</h4>
+                    <h2>{{ follower.user.profile.sport_3 }}</h2>
+                    <h4>Skill level: {{ follower.user.profile.skill_level_3 }}</h4>
+                    <p class="article-content">Location: {{ follower.user.profile.location }} </p>
+                    <p class="article-content">Gender: {{ follower.user.profile.gender }} </p>
+                    <p class="article-content">Age: {{ follower.user.profile.age }} </p>
+                    <form method="post" action="{% url 'handle-friend-request' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="follower_id" value="{{ follower.id }}">
+                            <button type="submit" name="action" value="accept" class="btn btn-primary">Accept</button>
+                            <button type="submit" name="action" value="reject" class="btn btn-secondary">Reject</button>
+                        </form>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+
+{% endblock content %}

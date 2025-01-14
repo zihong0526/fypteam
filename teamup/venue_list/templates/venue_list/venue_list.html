@@ -1,0 +1,56 @@
+{% extends "blog/base.html" %}
+{% block content %}
+<h1>Venue List</h1>
+
+<form method="get" action="{% url 'venue-list' %}">
+
+
+    <div class="form-group">
+        <select name="sport_type">
+            <option value="" selected>All Sports</option>
+            {% for sport_type in sport_types %}
+                <option value="{{ sport_type.name }}" {% if request.GET.sport_type == sport_type.name %}selected{% endif %}>{{ sport_type.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="text" name="location" placeholder="Location" value="{{ request.GET.location }}">
+
+
+
+        <button type="submit">Search</button>
+    </div>
+</form>
+
+
+
+
+
+
+
+
+{% for venue in venues %}
+<article class="media content-section">
+      <div class="media-body">
+        <div class="article-metadata">
+        <a style= "font-size: 25px;" href="{% url 'venue-detail' venue.pk %}">{{ venue.name }}</a>
+            <br>
+            {% if venue.image %}
+                    <img src="{{ venue.image.url }}" alt="{{ venue.name }} Image" width="200" height="150">
+                {% else %}
+                    <p>No image available</p>
+                {% endif %}
+            <h2><a class="article-title">Sport type: {{ sport_type.name }}</a></h2>
+
+            <ul>
+                {% for sport_type in venue.sport_types.all %}
+                    <li>{{ sport_type.name }}</li>
+                {% endfor %}
+            </ul>
+        <p class="article-content">Location: {{ venue.location }}</p>
+        <p class="article-content">Contact Number: {{ venue.contact_number }}</p>
+
+
+     </div>
+     </div>
+    </article>
+          {% endfor %}
+{% endblock content %}

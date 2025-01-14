@@ -1,0 +1,27 @@
+{% extends "blog/base.html" %}
+{% load bootstrap4 %}
+{% block content %}
+   <div class="content-section">
+     <form method="POST">
+       {% csrf_token %}
+       <fieldset class="form-group">
+         <legend class="border-bottom mb-4">Register</legend>
+         {% bootstrap_form form %}
+       </fieldset>
+       <div class="form-group">
+         <button class="btn btn-outline-info" type="submit">
+           Sign Up
+         </button>
+
+       </div>
+     </form>
+     <div class="border-top pt-3">
+       <small class="text-muted">
+         Already have account? Sign in here <a class="ml-2" href="{% url 'login' %}">Sign in</a>
+       </small>
+
+     </div>
+   </div>
+
+
+{% endblock content %}

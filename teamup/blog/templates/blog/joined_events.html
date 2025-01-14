@@ -1,0 +1,120 @@
+{% extends "blog/base.html" %}
+{% load join_request_tags %}
+{% block content %}
+    <h1>Joined Events</h1>
+    {% for event in joined_events %}
+        <article class="media content-section">
+            <img class="rounded-circle article-img" src="{{ event.author.profile.image.url }}">
+            <div class="media-body">
+                <div class="article-metadata">
+                    <a class="mr-2" href="{% url 'user-posts' event.author.username %}">{{ event.author }}</a>
+                    <small class="text-muted">post on {{ event.date_posted }}</small>
+                </div>
+                <h2><a href="{% url 'post-detail' event.id %}">Sport type: {{ event.sport_type }}</a></h2>
+                <p class="article-content">Location: {{ event.location }}</p>
+                <p class="article-content">Participants: {{ event.joined_users_count }} / {{ event.participant_number }}</p>
+                <p class="article-content">Event Date: {{ event.event_date }}</p>
+                <p class="article-content">Status: {{ event.status }}</p>
+                <p class="article-content">Time: {{ event.event_time }} - {{ event.event_end_time }}</p>
+
+
+                {% if event.status == 'inactive' %}
+                    <p class="text-muted">Event is inactive and has ended.</p>
+                {% endif %}
+                    {% if event.author != user %}
+                        {% with join_status=user|user_join_status:event %}
+                            {% if join_status == 'joined' %}
+                                <button class="btn btn-secondary joinButton" data-post-id="{{ event.id }}">Cancel Join</button>
+                                <p>You have joined this event.</p>
+                            {% elif join_status == 'rejected' %}
+                                <p>Your join request was rejected.</p>
+                            {% else %}
+                                {% if event.joined_users_count == event.participant_number %}
+                                    <button class="btn btn-secondary joinButton" data-post-id="{{ event.id }}" disabled>Full</button>
+                                {% elif event.status == 'inactive' %}
+                                    <!-- Check if the event is inactive -->
+                                    <button class="btn btn-secondary joinButton" data-post-id="{{ event.id }}" disabled>Event not available</button>
+                                    {% if event.event_date == today and event.event_end_datetime < current_time %}
+                                        <!-- Check if the event has ended -->
+                                        <button class="btn btn-secondary joinButton" data-post-id="{{ event.id }}" disabled>Event Ended</button>
+                                    {% endif %}
+                                {% else %}
+                                    <button class="btn btn-primary joinButton" data-post-id="{{ event.id }}">Join Event</button>
+                                {% endif %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endif %}
+
+                <p id="participantsCount{{ event.id }}">Participants: {{ event.joined_users_count }} / {{ event.participant_number }}</p>
+
+
+
+                <ul>
+                    {% for participant in event.participants.all %}
+                        <li>
+                            {{ participant.username }}
+                            <div>
+
+                        <a href="{% url 'leave-feedback' participant.id %}">Feedback</a>
+
+                            </div>
+
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </article>
+    {% endfor %}
+
+<script>
+  document.querySelectorAll('.joinButton').forEach(button => {
+    button.addEventListener('click', function () {
+        const postId = this.getAttribute('data-post-id');
+        const isJoining = this.innerHTML.trim() === 'Join Event';
+
+        // Perform AJAX request
+        const url = isJoining ? `/join_event/${postId}/` : `/cancel_join_event/${postId}/`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const participantsCountElement = document.getElementById(`participantsCount${postId}`);
+
+                if (isJoining) {
+                    window.location.href = `/join-success/${postId}/?message=You success join the event!`;
+
+                    this.innerHTML = 'Cancel Join';
+                    this.classList.add('btn-secondary');
+                    this.classList.remove('btn-primary');
+                    participantsCountElement.innerHTML = `Participants: ${data.participant_count} / ${post.participant_number}`;
+                    alert('Join request sent!');
+
+                    // Check if participant count equals required participant number
+                    if (data.participant_count === data.participant_number) {
+                        this.classList.add('btn-full');  // Add a class for styling a "full" button
+                        this.setAttribute('disabled', true);
+                    }
+                } else {
+                     window.location.href = `/cancel-join-success/${postId}/?message=You are not joining event now!`;
+
+
+                    this.innerHTML = 'Join Event';
+                    this.classList.add('btn-primary');
+                    this.classList.remove('btn-secondary');
+                    participantsCountElement.innerHTML = `Participants: ${data.participant_count} / ${post.participant_number}`;
+                    alert('Join request canceled!');
+
+                    // Check if participant count equals required participant number
+                    if (data.participant_count === post.participant_number) {
+                        this.classList.remove('btn-full');
+                        this.removeAttribute('disabled');
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
+});
+
+</script>
+
+{% endblock content %}

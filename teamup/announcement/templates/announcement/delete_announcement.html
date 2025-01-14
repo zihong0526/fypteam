@@ -1,0 +1,23 @@
+{% extends "blog/base.html" %}
+
+{% block content %}
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
+        <div class="card">
+          <div class="card-body">
+            <h1 class="card-title">Delete Announcement</h1>
+            <p class="card-text">
+              Are you sure you want to delete "{{ announcement.title }}"?
+            </p>
+            <form method="post" action="{% url 'confirm_delete_announcement' announcement.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">Yes, delete</button>
+              <a href="{% url 'announcement' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

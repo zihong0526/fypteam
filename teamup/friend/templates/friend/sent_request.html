@@ -1,0 +1,31 @@
+{% extends "blog/base.html" %}
+{% block content %}
+    <div class="container">
+        <h1>Sent Request</h1>
+        <a class="btn btn-info" href="{% url 'friend-request' user.username %}">Friend request</a>
+        <a class="btn btn-info" href="{% url 'friend' %}">Friend</a>
+        {% for friend in friends %}
+            <article class="media content-section">
+                <img class="rounded-circle article-img" src="{{ friend.friend.profile.image.url }}">
+                <div class="media-body">
+                    <a class="mr-2" href="#">{{ friend.friend.username }}</a>
+                    <h2>Prefer sport:</h2>
+                    <h2>{{ friend.friend.profile.sport_1 }}</h2>
+                    <h4>Skill level: {{ friend.friend.profile.skill_level_1 }}</h4>
+                    <h2>{{ friend.friend.profile.sport_2 }}</h2>
+                    <h4>Skill level: {{ friend.friend.profile.skill_level_2 }}</h4>
+                    <h2>{{ friend.friend.profile.sport_3 }}</h2>
+                    <h4>Skill level: {{ friend.friend.profile.skill_level_3 }}</h4>
+                    <p class="article-content">Location: {{ friend.friend.profile.location }} </p>
+                    <p class="article-content">Gender: {{ friend.friend.profile.gender }} </p>
+                    <p class="article-content">Age: {{ friend.friend.profile.age }} </p>
+                    <form method="post" action="{% url 'delete-friend-request' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="friend_id" value="{{ friend.id }}">
+                        <button type="submit" class="btn btn-secondary">Delete</button>
+                    </form>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% endblock content %}

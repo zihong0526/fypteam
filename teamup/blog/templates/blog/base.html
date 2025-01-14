@@ -1,0 +1,215 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD76S7BkyqKPv97f_VZD-1G9RYz9a6LzrY&libraries=places"></script>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <link rel="stylesheet" type="text/css" href="{% static 'blog/main.css' %}">
+
+     {%if title %}
+        <title>{{sport_type}}</title>
+    {% else %}
+        <title>Teamup</title>
+    {% endif %}
+</head>
+<body>
+    <header class="site-header">
+      <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+        <div class="container">
+            <a class="navbar-brand mr-4" href="{% url 'teamup' %}">Team Up</a>
+
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarToggle">
+            <div class="navbar-nav mr-auto">
+
+            </div>
+            <!-- Navbar Right Side -->
+              <div class="navbar-nav">
+                {% if user.is_authenticated %}
+                    <a class="nav-item nav-link" href="{% url 'blog-home' %}">Find event</a>
+
+                    <a class="nav-item nav-link" href="{% url 'user-profile-list' %}">Find Partner </a>
+                    <a class="nav-item nav-link" href="{% url 'friend' %}">Friend </a>
+                    <a class="nav-item nav-link" href="{% url 'venue-list' %}">Find venue </a>
+                    <a class="nav-item nav-link" href="{% url 'profile' %}">Profile</a>
+                    <a class="nav-item nav-link" href="{% url 'message' %}">
+                            Message
+                            <span class="red-dot message-red-dot" style="display: none;"></span>
+                        </a>
+
+
+                  <a class="nav-item nav-link" href="{% url 'notification-list' %}">
+                        Notification
+                        {% if unread_notifications %}
+                            <span class="red-dot"></span>
+                        {% endif %}
+                    </a>
+
+
+                    <a class="nav-item nav-link" href="{% url 'logout' %}">Logout</a>
+                {% else %}
+                    <a class="nav-item nav-link" href="{% url 'login' %}">Login</a>
+                    <a class="nav-item nav-link" href="{% url 'register' %}">Register</a>
+                {% endif %}
+            </div>
+          </div>
+        </div>
+      </nav>
+        <main role="main" class="container">
+          <div class="row">
+            <div class="col-md-8">
+              {% block content %}{% endblock %}
+            </div>
+              {% if user.is_authenticated %}
+
+            <div class="col-md-4">
+                <br><br><br>
+              <div class="content-section">
+                <h3>Sidebar</h3>
+                <p class='text-muted'>Quick access
+                  <ul class="list-group">
+                    <li class="list-group-item list-group-item-light"><a href="{% url 'user-posts' username=user.username %}">Created event</a></li>
+                    <li class="list-group-item list-group-item-light"><a href="{% url 'joined-events' %}">Joined event</a></li>
+                    <li class="list-group-item list-group-item-light"><a href="{% url 'post-create' %}">New Event</a></li>
+                    <li class="list-group-item list-group-item-light"><a href="{% url 'announcement' %}">Announcement</a></li>
+
+              </ul>
+                </p>
+                        <div id="calendar"></div>
+                        <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.5.1/moment.min.js"></script></div>
+              </div>
+            </div>
+
+
+
+
+
+
+              {% endif %}
+          </div>
+        </main>
+  <!-- Site footer -->
+    <footer >
+      <div class="bg-light py-4">
+      <div class="container text-center">
+        <p class="text-muted mb-0 py-2">© 2023 TeamUp All rights reserved.</p>
+      </div>
+    </div>
+    </footer>
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/dist/toastr.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/dist/toastr.min.css" />
+
+<style>
+    .red-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        background-color: red;
+        border-radius: 50%;
+        margin-left: 5px;
+    }
+
+#calendar {
+  max-width: 600px;
+  margin: 0 auto;
+  font-size: 10px;
+}
+
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" />
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
+<script>
+  $(document).ready(function () {
+    // Fetch the joined events for the current user
+    $.ajax({
+      url: "{% url 'joined-events-json' %}",
+      method: "GET",
+      success: function (data) {
+        // Process the joined events and add them to the FullCalendar events array
+        var joinedEvents = data.joined_events;
+
+        var fullCalendarEvents = joinedEvents.map(function (event) {
+          return {
+            title: event.sport_type,
+            start: event.event_datetime,
+            end: event.event_end_datetime,
+          };
+        });
+
+        // Initialize FullCalendar with the events
+        $('#calendar').fullCalendar({
+          // Your FullCalendar options go here
+          header: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'month,basicWeek,basicDay'
+          },
+          events: fullCalendarEvents
+        });
+      },
+      error: function (error) {
+        console.error("Error fetching joined events:", error);
+      }
+    });
+  });
+</script>
+<script>
+    $(document).ready(function () {
+        // Fetch the unread message count for the current user
+        $.ajax({
+            url: "{% url 'unread-messages-count' %}",
+            method: "GET",
+            success: function (data) {
+                var unreadMessageCount = data.unread_messages_count;
+
+                // Fetch the unread group messages count for the current user
+                $.ajax({
+
+                    method: "GET",
+                    success: function (data) {
+                        var unreadGroupMessagesCount = data.unread_group_messages_count;
+
+                        // Display red dot if there are unread messages or group messages
+                        if (unreadMessageCount > 0 ) {
+                            $('.message-red-dot').show();
+                        }
+
+                        // Add click event listener to hide red dots when user clicks into messages
+                        $('#messages-link').on('click', function () {
+                            $('.message-red-dot').hide();
+                        });
+                    },
+                    error: function (error) {
+                        console.error("Error fetching unread group messages count:", error);
+                    }
+                });
+            },
+            error: function (error) {
+                console.error("Error fetching unread messages count:", error);
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{% extends "blog/base.html" %}
+{% block content %}
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title">Confirm Deletion</h1>
+                <p class="card-text">Are you sure you want to delete {{ friend_user.username }} as your friend?</p>
+                <form method="post" action="{% url 'delete-friend' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="friend_id" value="{{ friend_user.id }}">
+                    <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                    <a href="{% url 'friend' %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

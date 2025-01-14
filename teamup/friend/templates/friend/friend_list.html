@@ -1,0 +1,37 @@
+{% extends "blog/base.html" %}
+{% block content %}
+    <div class="container">
+        <h1>Friend for {{ user.username }}</h1>
+        <a class="btn btn-info" href="{% url 'friend-request' user.username %}">Friend request</a>
+        <a class="btn btn-info" href="{% url 'sent-request' %}">Sent Request</a>
+
+        {% for friend in user.friendss_set.all %}
+            {% for friend_user in friend.friend.all %}
+                <article class="media content-section">
+                    <img class="rounded-circle article-img" src="{{ friend_user.profile.image.url }}">
+                    <div class="media-body">
+                        <a class="mr-2" href="{% url 'send-message' friend_user.username %}">{{ friend_user.username }}</a>
+
+                        <h3>{{ friend_user.profile.sport_1 }} : {{ friend_user.profile.skill_level_1 }}</h3>
+
+                        <h3>{{ friend_user.profile.sport_2 }} : {{ friend_user.profile.skill_level_2 }}</h3>
+
+                        <h3>{{ friend_user.profile.sport_3 }} : {{ friend_user.profile.skill_level_3 }}</h3>
+
+                        <p class="article-content">Location: {{ friend_user.profile.location }} </p>
+                        <p class="article-content">Gender: {{ friend_user.profile.gender }} </p>
+                        <p class="article-content">Age: {{ friend_user.profile.age }} </p>
+                        <a href="{% url 'send-message' friend_user.username %}" class="btn btn-primary">Message</a>
+
+                       <form method="get" action="{% url 'delete-friend' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="friend_id" value="{{ friend_user.id }}">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+
+                    </div>
+                </article>
+            {% endfor %}
+        {% endfor %}
+    </div>
+{% endblock content %}
